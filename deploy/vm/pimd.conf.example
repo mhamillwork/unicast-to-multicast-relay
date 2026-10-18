@@ -1,0 +1,13 @@
+# pimd (troglobit) on the gateway. Enable multicast routing first:
+#   sysctl net.ipv4.conf.all.mc_forwarding=1
+# The relay emits onto eth1. pimd registers that source with the RP and
+# forwards to interfaces that have joined. Use ttl >= 2 on the relay stream.
+#
+# rp-address is the VIP or this host's address on the multicast network.
+phyint eth0 disable
+phyint eth1 enable
+phyint eth2 enable
+
+bsr-candidate eth1
+rp-candidate eth1 group-list 239.0.0.0/8
+rp-address 192.0.2.50 239.0.0.0/8

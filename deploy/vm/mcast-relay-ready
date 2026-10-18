@@ -1,0 +1,12 @@
+#!/bin/sh
+# keepalived health check. Exits 0 only when the relay is forwarding.
+set -eu
+url="${MCAST_READY_URL:-http://127.0.0.1:9100/readyz}"
+if command -v curl >/dev/null 2>&1; then
+  exec curl --fail --silent --show-error --max-time 1 "$url" >/dev/null
+fi
+if command -v wget >/dev/null 2>&1; then
+  exec wget -q -O /dev/null -T 1 "$url"
+fi
+echo "mcast-relay-ready: need curl or wget" >&2
+exit 1

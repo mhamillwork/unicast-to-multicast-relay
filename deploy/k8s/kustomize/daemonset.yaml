@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: mcast-relay
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mcast-relay
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mcast-relay
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9100"
+        prometheus.io/path: /metrics
+    spec:
+      serviceAccountName: mcast-relay
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        node-role/multicast-gateway: "true"
+      tolerations:
+        - key: node-role/multicast-gateway
+          operator: Exists
+          effect: NoSchedule
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: mcast-relay
+          image: mcast-relay:dev
+          imagePullPolicy: IfNotPresent
+          args: ["--config", "/etc/mcast-relay/config.yaml"]
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            runAsGroup: 65532
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: feed
+              containerPort: 5000
+              protocol: UDP
+            - name: discovery
+              containerPort: 5001
+              protocol: UDP
+            - name: metrics
+              containerPort: 9100
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 9100
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 9100
+          resources:
+            requests:
+              cpu: "1"
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/mcast-relay
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: mcast-relay

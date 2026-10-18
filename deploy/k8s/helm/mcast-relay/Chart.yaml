@@ -1,0 +1,6 @@
+apiVersion: v2
+name: mcast-relay
+description: Unicast-to-multicast edge relay for clusters that only carry multicast inside the tunnel
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

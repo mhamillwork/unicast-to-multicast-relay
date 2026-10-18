@@ -1,0 +1,13 @@
+The relay is scheduled only onto nodes labeled node-role/multicast-gateway=true
+and uses hostNetwork so multicast leaves on {{ .Values.config.egressInterface }}.
+
+Senders can target:
+  1. Service {{ include "mcast-relay.fullname" . }} (ClusterIP or externalIPs)
+  2. The gateway node IP directly
+  3. A keepalived / kube-vip / MetalLB VIP that lands on the gateway
+
+Do not combine a load-balanced Service with an active/standby VIP for the same
+stream. Active/standby senders must all use the VIP. Active/active duplicates
+datagrams and receivers have to deduplicate.
+
+Readiness is http://<node>:9100/readyz and metrics are /metrics.

@@ -1,0 +1,39 @@
+# Active/standby VIP for the relay. Copy to both hosts and give the standby
+# a lower priority (100). Senders target the VIP, not a load-balanced Service.
+#
+# Timing budget with these defaults is about 2 seconds:
+#   advert_int 1, script interval 1, fall 2.
+# A failed check moves the instance to FAULT (no weight is set) and keepalived
+# sends a priority-0 advert, so the standby takes the VIP inside 3 seconds.
+# The ready script calls http://127.0.0.1:9100/readyz.
+global_defs {
+    enable_script_security
+    script_user root
+}
+
+vrrp_script chk_mcast_relay {
+    script "/usr/local/libexec/mcast-relay-ready"
+    interval 1
+    timeout 1
+    fall 2
+    rise 1
+    user root
+}
+
+vrrp_instance mcast_gw {
+    state BACKUP
+    interface eth0
+    virtual_router_id 51
+    priority 150
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass change-me
+    }
+    virtual_ipaddress {
+        192.0.2.50/24
+    }
+    track_script {
+        chk_mcast_relay
+    }
+}

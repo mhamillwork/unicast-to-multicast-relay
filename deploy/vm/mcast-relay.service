@@ -1,0 +1,29 @@
+[Unit]
+Description=Unicast to multicast edge relay
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mcast-relay
+Group=mcast-relay
+ExecStart=/usr/local/bin/mcast-relay --config /etc/mcast-relay/config.yaml
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictAddressFamilies=AF_INET AF_NETLINK
+LimitNOFILE=1048576
+# UDP sockets need no extra capability. Add CAP_NET_BIND_SERVICE only if a
+# stream listens below port 1024.
+
+[Install]
+WantedBy=multi-user.target

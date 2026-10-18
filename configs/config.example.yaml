@@ -1,0 +1,26 @@
+# Sample configuration. The process checks that egress_interface exists,
+# is up, and has multicast enabled. Environment variables override the
+# file: MCAST_EGRESS_INTERFACE, MCAST_METRICS_LISTEN, MCAST_LOG_LEVEL,
+# MCAST_BATCH_SIZE, MCAST_READ_BUFFER_BYTES, MCAST_WRITE_BUFFER_BYTES,
+# MCAST_MAX_DATAGRAM_BYTES. Values may also use ${VAR} or ${VAR:-default}.
+egress_interface: eth1
+metrics_listen: 0.0.0.0:9100
+log_level: info
+streams:
+  - name: market-feed-a
+    listen: 0.0.0.0:5000
+    group: 239.1.1.10
+    port: 5000
+    ttl: 4
+    allowed_sources: ["10.0.0.0/8"]
+  - name: discovery
+    listen: 0.0.0.0:5001
+    group: 239.255.255.250
+    port: 1900
+    ttl: 1
+reverse_streams:
+  - name: ext-status
+    join_group: 239.2.2.2
+    port: 6000
+    interface: eth1
+    targets: ["10.96.12.34:6000"]

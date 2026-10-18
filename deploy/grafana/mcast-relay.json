@@ -1,0 +1,135 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "pps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        {
+          "expr": "sum by (stream, direction) (rate(mcast_relay_packets_in_total{stream=~\"$stream\"}[1m]))",
+          "legendFormat": "{{stream}} {{direction}} in",
+          "refId": "A"
+        }
+      ],
+      "title": "Packets in",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "pps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        {
+          "expr": "sum by (stream, direction) (rate(mcast_relay_packets_out_total{stream=~\"$stream\"}[1m]))",
+          "legendFormat": "{{stream}} {{direction}} out",
+          "refId": "A"
+        }
+      ],
+      "title": "Packets out",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "pps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 3,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        {
+          "expr": "sum by (stream, direction, reason) (rate(mcast_relay_drops_total{stream=~\"$stream\"}[1m]))",
+          "legendFormat": "{{stream}} {{reason}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Drops",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 4,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum by (le, stream) (rate(mcast_relay_forward_latency_seconds_bucket{stream=~\"$stream\"}[1m])))",
+          "legendFormat": "{{stream}} p99",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.50, sum by (le, stream) (rate(mcast_relay_forward_latency_seconds_bucket{stream=~\"$stream\"}[1m])))",
+          "legendFormat": "{{stream}} p50",
+          "refId": "B"
+        }
+      ],
+      "title": "Forwarding latency",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "Bps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 5,
+      "targets": [
+        {
+          "expr": "sum by (stream) (rate(mcast_relay_bytes_out_total{stream=~\"$stream\"}[1m]))",
+          "legendFormat": "{{stream}} out",
+          "refId": "A"
+        }
+      ],
+      "title": "Bytes out",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "max": 1, "min": 0 }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 6,
+      "targets": [
+        {
+          "expr": "mcast_relay_stream_up{stream=~\"$stream\"}",
+          "legendFormat": "{{stream}} {{direction}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Stream up",
+      "type": "timeseries"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["multicast", "mcast-relay"],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "name": "datasource",
+        "query": "prometheus",
+        "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": {},
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "includeAll": true,
+        "multi": true,
+        "name": "stream",
+        "query": "label_values(mcast_relay_packets_in_total, stream)",
+        "refresh": 2,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "title": "Multicast Edge Relay",
+  "uid": "mcast-relay",
+  "version": 1
+}

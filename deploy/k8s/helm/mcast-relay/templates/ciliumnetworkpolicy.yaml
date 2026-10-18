@@ -1,0 +1,27 @@
+{{- if .Values.ciliumNetworkPolicy.enabled }}
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: {{ include "mcast-relay.fullname" . }}
+  labels:
+    {{- include "mcast-relay.labels" . | nindent 4 }}
+spec:
+  endpointSelector:
+    matchLabels:
+      {{- include "mcast-relay.selectorLabels" . | nindent 6 }}
+  ingress:
+    - fromEndpoints:
+        {{- if .Values.ciliumNetworkPolicy.fromEndpoints }}
+        {{- toYaml .Values.ciliumNetworkPolicy.fromEndpoints | nindent 8 }}
+        {{- else }}
+        - {}
+        {{- end }}
+      toPorts:
+        {{- range .Values.service.ports }}
+        {{- if eq .protocol "UDP" }}
+        - ports:
+            - port: {{ .port | quote }}
+              protocol: UDP
+        {{- end }}
+        {{- end }}
+{{- end }}

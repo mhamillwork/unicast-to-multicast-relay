@@ -1,0 +1,13 @@
+# Host-network smoke test. Linux only: multicast on the host's lo or eth1.
+#   docker compose -f test/docker-compose/docker-compose.yaml up --build
+services:
+  relay:
+    build:
+      context: ../..
+    network_mode: host
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    volumes:
+      - ./config.yaml:/etc/mcast-relay/config.yaml:ro
+    command: ["--config", "/etc/mcast-relay/config.yaml"]

@@ -1,0 +1,14 @@
+# igmpproxy on the gateway. "upstream" is the network where the relay emits
+# multicast (the source side). "downstream" faces receivers.
+# The relay's egress_interface should be the upstream NIC, with ttl > 1 when
+# receivers are not on that LAN.
+#
+# Install: apt-get install igmpproxy
+#           cp igmpproxy.conf.example /etc/igmpproxy.conf
+quickleave
+
+phyint eth1 upstream ratelimit 0 threshold 1
+        altnet 10.0.0.0/8
+        altnet 192.168.0.0/16
+
+phyint eth2 downstream ratelimit 0 threshold 1

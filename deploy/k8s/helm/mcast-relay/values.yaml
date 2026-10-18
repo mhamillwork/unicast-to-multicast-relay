@@ -1,0 +1,79 @@
+replicaCount: 1
+
+image:
+  repository: mcast-relay
+  tag: dev
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+# Senders inside the cluster should target either this Service, the gateway
+# node IP, or a VIP (MetalLB, kube-vip, or keepalived). With hostNetwork the
+# relay binds the node IP directly, so a VIP that moves between gateway nodes
+# needs no kube-proxy rules: publish it with service.externalIPs or point
+# senders at the VIP and do not also load-balance the same streams.
+service:
+  enabled: true
+  type: ClusterIP
+  annotations: {}
+  externalIPs: []
+  # First matching stream ports are published. Override for your config.
+  ports:
+    - name: feed
+      port: 5000
+      targetPort: 5000
+      protocol: UDP
+    - name: metrics
+      port: 9100
+      targetPort: 9100
+      protocol: TCP
+
+config:
+  egressInterface: eth1
+  metricsListen: 0.0.0.0:9100
+  logLevel: info
+  yaml: |
+    egress_interface: eth1
+    metrics_listen: 0.0.0.0:9100
+    log_level: info
+    streams:
+      - name: market-feed-a
+        listen: 0.0.0.0:5000
+        group: 239.1.1.10
+        port: 5000
+        ttl: 4
+        allowed_sources: ["10.0.0.0/8"]
+      - name: discovery
+        listen: 0.0.0.0:5001
+        group: 239.255.255.250
+        port: 1900
+        ttl: 1
+
+nodeSelector:
+  node-role/multicast-gateway: "true"
+
+tolerations:
+  - key: node-role/multicast-gateway
+    operator: Exists
+    effect: NoSchedule
+
+resources:
+  requests:
+    cpu: "1"
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+
+podAnnotations: {}
+
+serviceMonitor:
+  enabled: false
+  labels: {}
+  interval: 15s
+
+ciliumNetworkPolicy:
+  enabled: false
+  # Endpoints allowed to send UDP to the relay. Empty allows the world
+  # from inside the cluster (still subject to any default-deny policy).
+  fromEndpoints: []

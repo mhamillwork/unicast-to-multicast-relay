@@ -1,0 +1,10 @@
+egress_interface: lo
+metrics_listen: 127.0.0.1:9100
+log_level: info
+streams:
+  - name: loopback
+    listen: 127.0.0.1:5000
+    group: 239.1.1.10
+    port: 5001
+    ttl: 1
+    loop: true

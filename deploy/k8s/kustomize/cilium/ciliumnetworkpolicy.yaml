@@ -1,0 +1,18 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: mcast-relay
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: mcast-relay
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app: market-sender
+      toPorts:
+        - ports:
+            - port: "5000"
+              protocol: UDP
+            - port: "5001"
+              protocol: UDP

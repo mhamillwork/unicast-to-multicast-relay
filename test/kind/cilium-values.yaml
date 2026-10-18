@@ -1,0 +1,11 @@
+# Cilium in tunnel mode with multicast enabled. The kind script fills in
+# k8sServiceHost from the control-plane container address.
+routingMode: tunnel
+tunnelProtocol: vxlan
+kubeProxyReplacement: true
+ipam:
+  mode: kubernetes
+operator:
+  replicas: 1
+extraConfig:
+  multicast-enabled: "true"
